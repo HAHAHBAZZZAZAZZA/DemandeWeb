@@ -1,0 +1,102 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Sender</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="floating-folders" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <main class="app-shell">
+    <section id="loginView" class="card login-floating">
+      <h1>Acces au server</h1>
+      <p class="subtitle">Entre ton pseudo pour continuer.</p>
+      <p id="setupNotice" class="setup hidden"></p>
+
+      <form id="loginForm" class="stack" novalidate>
+        <label for="discordPseudo">Pseudo Discord</label>
+        <input
+          id="discordPseudo"
+          name="discordPseudo"
+          type="text"
+          placeholder="Ex: MonPseudo"
+          autocomplete="off"
+          required
+        />
+        <button type="submit">Se connecter</button>
+      </form>
+    </section>
+
+    <section id="userView" class="card hidden">
+      <h2>Depot de photo</h2>
+      <p class="subtitle">Pseudo: <span id="displayPseudo"></span></p>
+
+      <form id="uploadForm" class="stack" novalidate>
+        <label for="photoInput">Choisir une photo</label>
+        <input id="photoInput" name="photoInput" type="file" accept="image/*" required />
+
+        <label class="checkbox-row" for="staffConsent">
+          <input id="staffConsent" name="staffConsent" type="checkbox" required />
+          <span>Je valide.</span>
+        </label>
+
+        <button type="submit">Envoyer la photo</button>
+      </form>
+
+      <div id="statusBox" class="status hidden" aria-live="polite"></div>
+
+      <button id="disconnectUser" class="secondary" type="button">Changer de compte</button>
+    </section>
+
+    <section id="staffView" class="card hidden">
+      <div class="staff-head">
+        <div>
+          <h2>Mode staff</h2>
+          <p class="subtitle">Gestion des dossiers joueurs.</p>
+        </div>
+        <button id="disconnectStaff" class="secondary" type="button">Se deconnecter</button>
+      </div>
+
+      <div class="staff-controls">
+        <div class="staff-filter-group">
+          <label for="statusFilter">Filtrer par statut</label>
+          <select id="statusFilter">
+            <option value="">Tous les statuts</option>
+            <option value="en attente">En attente</option>
+            <option value="accepté">Accepté</option>
+            <option value="refusé">Refusé</option>
+          </select>
+        </div>
+        <div class="staff-filter-group">
+          <label for="searchStaff">Rechercher un pseudo</label>
+          <input id="searchStaff" type="search" placeholder="Pseudo ou mot-clé" />
+        </div>
+        <button id="refreshStaff" class="secondary" type="button">Rafraîchir</button>
+      </div>
+
+      <div id="staffStats" class="staff-stats" aria-live="polite"></div>
+
+      <div id="staffList" class="staff-list"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

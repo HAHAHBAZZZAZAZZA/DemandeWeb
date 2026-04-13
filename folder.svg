@@ -1,0 +1,10 @@
+<svg width="128" height="96" viewBox="0 0 128 96" xmlns="http://www.w3.org/2000/svg" role="presentation" aria-hidden="true">
+  <defs>
+    <linearGradient id="folderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd45c" />
+      <stop offset="100%" stop-color="#f28c1b" />
+    </linearGradient>
+  </defs>
+  <path d="M12 28h34l10 12h60c4.4 0 8 3.6 8 8v34c0 4.4-3.6 8-8 8H12c-4.4 0-8-3.6-8-8V36c0-4.4 3.6-8 8-8z" fill="url(#folderGradient)" stroke="#f9a826" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M46 28V14h42c3.3 0 6 2.7 6 6v8H46z" fill="#f9d468" stroke="#f28c1b" stroke-width="4" stroke-linejoin="round"/>
+</svg>
