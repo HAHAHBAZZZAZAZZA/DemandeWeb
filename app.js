@@ -51,6 +51,11 @@ const videoModal = document.getElementById("videoModal");
 const videoModalPlayer = document.getElementById("videoModalPlayer");
 const videoModalTitle = document.getElementById("videoModalTitle");
 const videoModalInfo = document.getElementById("videoModalInfo");
+const videoUploadPanel = document.getElementById("videoUploadPanel");
+const videoUploadForm = document.getElementById("videoUploadForm");
+const videoUploadTitle = document.getElementById("videoUploadTitle");
+const videoUploadFile = document.getElementById("videoUploadFile");
+const videoUploadNotice = document.getElementById("videoUploadNotice");
 
 const staffList = document.getElementById("staffList");
 const disconnectUser = document.getElementById("disconnectUser");
@@ -74,6 +79,12 @@ const STATUS_LABELS = {
   accepté: "Accepté",
   refusé: "Refusé"
 };
+const VIDEO_STATUS_OPTIONS = ["en attente", "publiée", "refusée"];
+const VIDEO_STATUS_LABELS = {
+  "en attente": "En attente",
+  "publiée": "Publiée",
+  refusée: "Refusée"
+};
 
 let staffCache = [];
 let schemaSupportsStaffFields = true;
@@ -83,6 +94,7 @@ let schemaSupportsCommunityComments = true;
 let schemaSupportsCommunityLikes = true;
 let schemaSupportsPresence = true;
 let schemaSupportsStaffVideos = true;
+let schemaSupportsVideoMetadata = true;
 
 let currentPseudo = null;
 let currentSubmissionApproved = false;
@@ -371,6 +383,10 @@ function setVideoPanelState({ approved = false, open = false } = {}) {
     videosAccess.classList.toggle("hidden", !approved);
   }
 
+  if (videoUploadPanel) {
+    videoUploadPanel.classList.toggle("hidden", !approved);
+  }
+
   if (videosBlock) {
     videosBlock.classList.toggle("hidden", !videosIsOpen);
     videosBlock.classList.toggle("videos-stage", videosIsOpen);
@@ -384,9 +400,14 @@ function setVideoPanelState({ approved = false, open = false } = {}) {
   if (videosNotice) {
     videosNotice.textContent = approved
       ? videosIsOpen
-        ? "Tu peux regarder les videos du staff."
-        : "Clique pour ouvrir les videos."
+        ? "Tu peux regarder les videos valides et proposer la tienne."
+        : "Clique pour ouvrir les videos et poster la tienne."
       : "Acces reserve aux comptes verifiés.";
+  }
+
+  if (videoUploadNotice && approved) {
+    videoUploadNotice.classList.add("hidden");
+    videoUploadNotice.textContent = "";
   }
 
   document.body.classList.toggle("videos-theme", Boolean(approved && videosIsOpen));
@@ -409,6 +430,13 @@ function disconnect() {
   localStorage.removeItem(SESSION_KEY);
   loginForm.reset();
   uploadForm.reset();
+  if (videoUploadForm) {
+    videoUploadForm.reset();
+  }
+  if (videoUploadNotice) {
+    videoUploadNotice.classList.add("hidden");
+    videoUploadNotice.textContent = "";
+  }
   hideStatus();
   clearCommunityTimers();
   clearPresenceHeartbeat();
@@ -432,7 +460,11 @@ function formatDate(isoValue) {
 }
 
 function buildPublicPhotoUrl(path) {
-  const { data } = supabaseClient.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+  const safePath = String(path || "").trim();
+  if (!safePath) {
+    return "";
+  }
+  const { data } = supabaseClient.storage.from(STORAGE_BUCKET).getPublicUrl(safePath);
   return data?.publicUrl || "";
 }
 
@@ -478,7 +510,39 @@ function getStatusLabel(value) {
 
 function getStatusClass(value) {
   const normalized = String(value || "en attente").toLowerCase();
+  if (normalized === "en attente") {
+    return "en-attente";
+  }
+  if (normalized === "accepté") {
+    return "accepted";
+  }
+  if (normalized === "refusé") {
+    return "refused";
+  }
   return normalized.replace(/[^a-z0-9]+/g, "-");
+}
+
+function getVideoStatusLabel(value) {
+  return VIDEO_STATUS_LABELS[value] || value || "En attente";
+}
+
+function getVideoStatusClass(value) {
+  const normalized = String(value || "en attente").toLowerCase();
+  if (normalized === "en attente") {
+    return "en-attente";
+  }
+  if (normalized === "publiée") {
+    return "published";
+  }
+  if (normalized === "refusée") {
+    return "refused";
+  }
+  return normalized.replace(/[^a-z0-9]+/g, "-");
+}
+
+function getVideoAvatarInitial(pseudo = "") {
+  const trimmed = String(pseudo || "").trim();
+  return trimmed ? trimmed.charAt(0).toUpperCase() : "N";
 }
 
 function applyStaffFilters(entries = []) {
@@ -659,6 +723,17 @@ async function updateSubmissionField(submissionId, payload) {
   }
 }
 
+async function updateVideoField(videoId, payload) {
+  if (!supabaseClient) {
+    throw new Error("Configuration Supabase manquante");
+  }
+
+  const { error } = await supabaseClient.from("staff_videos").update(payload).eq("id", videoId);
+  if (error) {
+    throw new Error(error.message || "Mise à jour video impossible");
+  }
+}
+
 function sanitizePseudoForFile(pseudo) {
   const cleaned = String(pseudo || "").replace(/[^a-zA-Z0-9_.-]/g, "_");
   return cleaned.slice(0, 40) || "user";
@@ -743,6 +818,38 @@ async function fetchCommunitySubmissions() {
   }
 
   return Array.isArray(data) ? data : [];
+}
+
+async function fetchLatestAcceptedSubmissionPhotoPath(pseudo) {
+  if (!supabaseClient || !pseudo) {
+    return "";
+  }
+
+  const { data, error } = await supabaseClient
+    .from("submissions")
+    .select("photo_path, status, created_at")
+    .eq("pseudo", pseudo)
+    .eq("status", "accepté")
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    const message = String(error.message || "");
+    if (schemaSupportsPublicStatus && /(submissions\.)?status\s+does not exist/i.test(message)) {
+      schemaSupportsPublicStatus = false;
+      return "";
+    }
+    throw new Error(message || "Lecture du dossier valide impossible");
+  }
+
+  return Array.isArray(data) && data.length ? String(data[0]?.photo_path || "") : "";
+}
+
+function getVideoEntriesForPublic(entries = []) {
+  return entries.filter((entry) => {
+    const status = String(entry?.status || "publiée");
+    return !schemaSupportsVideoMetadata || status === "publiée" || status === "accepté";
+  });
 }
 
 function hasOwnAcceptedSubmission(entries = []) {
@@ -987,9 +1094,13 @@ async function fetchStaffVideos() {
     return [];
   }
 
+  const selectFields = schemaSupportsVideoMetadata
+    ? "id, pseudo, title, video_path, profile_photo_path, duration_seconds, status, staff_note, created_at"
+    : "id, title, video_path, duration_seconds, created_at";
+
   const { data, error } = await supabaseClient
     .from("staff_videos")
-    .select("id, title, video_path, duration_seconds, created_at")
+    .select(selectFields)
     .order("created_at", { ascending: false })
     .limit(48);
 
@@ -998,6 +1109,10 @@ async function fetchStaffVideos() {
     if (schemaSupportsStaffVideos && /staff_videos/i.test(message) && /does not exist/i.test(message)) {
       schemaSupportsStaffVideos = false;
       return [];
+    }
+    if (schemaSupportsVideoMetadata && /(pseudo|profile_photo_path|status|staff_note)\s+does not exist/i.test(message)) {
+      schemaSupportsVideoMetadata = false;
+      return fetchStaffVideos();
     }
     throw new Error(message || "Lecture des videos impossible");
   }
@@ -1028,8 +1143,86 @@ function formatVideoDuration(seconds) {
 }
 
 function buildProtectedVideoUrl(path) {
-  const { data } = supabaseClient.storage.from("videos").getPublicUrl(path);
+  const safePath = String(path || "").trim();
+  if (!safePath) {
+    return "";
+  }
+  const { data } = supabaseClient.storage.from("videos").getPublicUrl(safePath);
   return data?.publicUrl || "";
+}
+
+function buildVideoAvatarMarkup(video = {}) {
+  const photoUrl = buildPublicPhotoUrl(video.profile_photo_path || "");
+  const pseudo = String(video.pseudo || "").trim();
+  const initial = escapeHtml(getVideoAvatarInitial(pseudo));
+  if (photoUrl) {
+    return `
+      <div class="video-card-avatar video-card-avatar--image">
+        <img src="${escapeHtml(photoUrl)}" alt="Photo de profil de ${escapeHtml(pseudo || "Joueur")}" loading="lazy" />
+      </div>
+    `;
+  }
+  return `<div class="video-card-avatar">${initial}</div>`;
+}
+
+async function resolveVideoProfilePhotoPath(pseudo) {
+  const photoPath = await fetchLatestAcceptedSubmissionPhotoPath(pseudo);
+  return String(photoPath || "").trim();
+}
+
+async function uploadVideoRecord({ pseudo, title, file, status }) {
+  const durationSeconds = await getMediaDurationSeconds(file);
+  if (durationSeconds > 300) {
+    throw new Error("La video doit durer 5 minutes maximum");
+  }
+
+  const safePseudo = sanitizePseudoForFile(pseudo);
+  const safeTitle = String(title || "").trim().slice(0, 80) || "video";
+  const fileExt = extensionFromFile(file.name);
+  const filePath = `${safePseudo}/${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
+  const profilePhotoPath = await resolveVideoProfilePhotoPath(pseudo);
+
+  if (status === "en attente" && !profilePhotoPath) {
+    throw new Error("Ton dossier doit etre valide avant de poster une video.");
+  }
+
+  const { error: uploadError } = await supabaseClient.storage.from("videos").upload(filePath, file, {
+    cacheControl: "3600",
+    upsert: false
+  });
+  if (uploadError) {
+    throw new Error(uploadError.message || "Upload video impossible");
+  }
+
+  const payload = {
+    pseudo,
+    title: safeTitle,
+    video_path: filePath,
+    profile_photo_path: profilePhotoPath,
+    duration_seconds: durationSeconds,
+    status: VIDEO_STATUS_OPTIONS.includes(status) ? status : "en attente",
+    staff_note: ""
+  };
+
+  if (payload.status === "publiée") {
+    payload.approved_at = new Date().toISOString();
+  }
+
+  const { error: insertError } = await supabaseClient.from("staff_videos").insert([payload]);
+
+  if (insertError) {
+    await supabaseClient.storage.from("videos").remove([filePath]);
+    throw new Error(insertError.message || "Ecriture video impossible");
+  }
+}
+
+async function uploadStaffVideo(title, file) {
+  await uploadVideoRecord({
+    pseudo: currentPseudo || STAFF_PSEUDO,
+    title,
+    file,
+    status: "publiée"
+  });
 }
 
 function openVideoModal(video) {
@@ -1051,7 +1244,8 @@ function openVideoModal(video) {
   if (videoModalInfo) {
     const duration = formatVideoDuration(video?.duration_seconds);
     const published = formatDate(video?.created_at);
-    videoModalInfo.textContent = `${duration} · ${published}`;
+    const pseudo = String(video?.pseudo || "").trim() || "Joueur";
+    videoModalInfo.textContent = `${pseudo} · ${duration} · ${published}`;
   }
 
   videoModal.classList.remove("hidden");
@@ -1207,12 +1401,14 @@ function renderVideosFeed(videos = []) {
     return;
   }
 
-  if (!videos.length) {
-    videosFeed.innerHTML = '<div class="community-empty">Aucune video pour le moment.</div>';
+  const visibleVideos = getVideoEntriesForPublic(videos);
+
+  if (!visibleVideos.length) {
+    videosFeed.innerHTML = '<div class="community-empty">Aucune video validee pour le moment.</div>';
     return;
   }
 
-  videosFeed.innerHTML = videos
+  videosFeed.innerHTML = visibleVideos
     .map((video, index) => {
       const videoId = escapeHtml(video.id || "");
       const safeTitle = escapeHtml(video.title || "Video du staff");
@@ -1220,6 +1416,8 @@ function renderVideosFeed(videos = []) {
       const safeTime = escapeHtml(formatDate(video.created_at));
       const safePath = escapeHtml(video.video_path || "");
       const safeUrl = escapeHtml(buildProtectedVideoUrl(video.video_path || ""));
+      const safePseudo = escapeHtml(video.pseudo || "Joueur");
+      const avatarMarkup = buildVideoAvatarMarkup(video);
       return `
         <article class="video-card video-card--compact" data-video-id="${videoId}" data-video-path="${safePath}" data-video-title="${safeTitle}" data-video-duration="${escapeHtml(
           String(video.duration_seconds || 0)
@@ -1230,10 +1428,10 @@ function renderVideosFeed(videos = []) {
           </div>
           <div class="video-card-meta">
             <div class="video-card-channel">
-              <span class="video-card-avatar" aria-hidden="true">N</span>
+              ${avatarMarkup}
               <div>
                 <strong>${safeTitle}</strong>
-                <span>NDEVIDEOS · staff anonyme</span>
+                <span>${safePseudo} · video validée</span>
               </div>
             </div>
             <span>${safeDuration} · ${safeTime}</span>
@@ -1257,18 +1455,37 @@ function renderStaffVideosList(videos = []) {
   staffVideosList.innerHTML = videos
     .map((video, index) => {
       const safeId = escapeHtml(video.id || "");
+      const safePseudo = escapeHtml(video.pseudo || "inconnu");
       const safeTitle = escapeHtml(video.title || "Video du staff");
       const safeDuration = escapeHtml(formatVideoDuration(video.duration_seconds));
       const safeTime = escapeHtml(formatDate(video.created_at));
       const safeUrl = escapeHtml(buildProtectedVideoUrl(video.video_path || ""));
+      const currentStatus = VIDEO_STATUS_OPTIONS.includes(video.status) ? video.status : "en attente";
+      const statusClass = getVideoStatusClass(currentStatus);
+      const statusLabel = getVideoStatusLabel(currentStatus);
+      const optionNodes = VIDEO_STATUS_OPTIONS.map(
+        (option) =>
+          `<option value="${option}" ${option === currentStatus ? "selected" : ""}>${getVideoStatusLabel(option)}</option>`
+      ).join("");
+      const avatarMarkup = buildVideoAvatarMarkup(video);
       return `
         <article class="staff-video-item" style="--delay:${index * 60}ms">
           <video src="${safeUrl}" controls playsinline preload="metadata"></video>
           <div class="staff-video-item-meta">
-            <div>
-              <strong>${safeTitle}</strong>
-              <span>${safeDuration} · ${safeTime}</span>
+            <div class="staff-video-item-channel">
+              ${avatarMarkup}
+              <div>
+                <strong>${safeTitle}</strong>
+                <span>${safePseudo} · ${safeDuration} · ${safeTime}</span>
+              </div>
             </div>
+            <label class="entry-status">
+              <span>Statut</span>
+              <select data-video-id="${safeId}">
+                ${optionNodes}
+              </select>
+            </label>
+            <span class="status-chip status-chip--${statusClass}">${statusLabel}</span>
             <button class="secondary staff-video-delete" type="button" data-id="${safeId}" data-path="${escapeHtml(video.video_path || "")}">
               Supprimer
             </button>
@@ -1515,6 +1732,80 @@ uploadForm.addEventListener("submit", async (event) => {
   }
 });
 
+if (videoUploadForm) {
+  videoUploadForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (!supabaseClient) {
+      if (videoUploadNotice) {
+        videoUploadNotice.textContent = "Configuration serveur manquante.";
+        videoUploadNotice.classList.remove("hidden");
+      }
+      return;
+    }
+
+    if (!currentPseudo) {
+      if (videoUploadNotice) {
+        videoUploadNotice.textContent = "Session invalide, reconnecte-toi.";
+        videoUploadNotice.classList.remove("hidden");
+      }
+      return;
+    }
+
+    if (!currentSubmissionApproved) {
+      if (videoUploadNotice) {
+        videoUploadNotice.textContent = "Ton dossier doit etre valide avant de poster une video.";
+        videoUploadNotice.classList.remove("hidden");
+      }
+      return;
+    }
+
+    const title = (videoUploadTitle?.value || "").trim();
+    const file = videoUploadFile?.files?.[0];
+    if (!title || !file) {
+      if (videoUploadNotice) {
+        videoUploadNotice.textContent = "Ajoute un titre et une video.";
+        videoUploadNotice.classList.remove("hidden");
+      }
+      return;
+    }
+
+    const submitBtn = videoUploadForm.querySelector("button[type='submit']");
+    if (submitBtn instanceof HTMLButtonElement) {
+      submitBtn.disabled = true;
+    }
+
+    if (videoUploadNotice) {
+      videoUploadNotice.textContent = "Envoi de la video en attente de validation...";
+      videoUploadNotice.classList.remove("hidden");
+    }
+
+    try {
+      await uploadVideoRecord({
+        pseudo: currentPseudo,
+        title,
+        file,
+        status: "en attente"
+      });
+      if (videoUploadNotice) {
+        videoUploadNotice.textContent = "Video envoyee. Le staff doit la valider avant publication.";
+        videoUploadNotice.classList.remove("hidden");
+      }
+      videoUploadForm.reset();
+      await Promise.all([renderVideosSection(), renderStaffVideosSection()]);
+    } catch (error) {
+      if (videoUploadNotice) {
+        videoUploadNotice.textContent = error.message || "Publication video impossible.";
+        videoUploadNotice.classList.remove("hidden");
+      }
+    } finally {
+      if (submitBtn instanceof HTMLButtonElement) {
+        submitBtn.disabled = false;
+      }
+    }
+  });
+}
+
 staffList.addEventListener("change", async (event) => {
   const target = event.target;
   if (!(target instanceof HTMLElement) || !target.matches("select[data-field='status']")) {
@@ -1537,6 +1828,41 @@ staffList.addEventListener("change", async (event) => {
     target.disabled = false;
   }
 });
+
+if (staffVideosList) {
+  staffVideosList.addEventListener("change", async (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.matches("select[data-video-id]")) {
+      return;
+    }
+
+    if (!isStaffPseudo()) {
+      return;
+    }
+
+    const videoId = target.getAttribute("data-video-id");
+    const newStatus = target.value;
+    if (!videoId || !VIDEO_STATUS_OPTIONS.includes(newStatus)) {
+      return;
+    }
+
+    target.disabled = true;
+    try {
+      const payload = {
+        status: newStatus
+      };
+      if (newStatus === "publiée") {
+        payload.approved_at = new Date().toISOString();
+      }
+      await updateVideoField(videoId, payload);
+      await Promise.all([renderVideosSection(), renderStaffVideosSection()]);
+    } catch (error) {
+      alert(`Erreur de mise a jour video: ${error.message || "reessaie"}`);
+    } finally {
+      target.disabled = false;
+    }
+  });
+}
 
 staffList.addEventListener("click", async (event) => {
   const target = event.target;
@@ -1817,6 +2143,7 @@ if (staffVideosList) {
       await deleteStaffVideo(videoId, videoPath);
       staffVideosCache = staffVideosCache.filter((video) => String(video.id) !== String(videoId));
       renderStaffVideosList(staffVideosCache);
+      await renderVideosSection();
       setStatus("Video supprimée.", "success");
     } catch (error) {
       setStatus(error.message || "Suppression video impossible.", "error");

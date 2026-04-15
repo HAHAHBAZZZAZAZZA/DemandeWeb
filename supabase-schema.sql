@@ -200,11 +200,22 @@ on conflict (id) do nothing;
 
 create table if not exists public.staff_videos (
   id uuid primary key default gen_random_uuid(),
+  pseudo text not null default 'staff',
   title text not null check (char_length(title) between 1 and 80),
   video_path text not null,
+  profile_photo_path text not null default '',
   duration_seconds integer not null check (duration_seconds between 1 and 300),
+  status text not null default 'publiée' check (status in ('en attente', 'publiée', 'refusée')),
+  staff_note text default '',
+  approved_at timestamptz,
   created_at timestamptz not null default now()
 );
+
+alter table public.staff_videos add column if not exists pseudo text not null default 'staff';
+alter table public.staff_videos add column if not exists profile_photo_path text not null default '';
+alter table public.staff_videos add column if not exists status text not null default 'publiée';
+alter table public.staff_videos add column if not exists staff_note text default '';
+alter table public.staff_videos add column if not exists approved_at timestamptz;
 
 alter table public.staff_videos enable row level security;
 

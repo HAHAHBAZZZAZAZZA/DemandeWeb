@@ -89,10 +89,29 @@
         <div class="community-head">
           <div>
             <h3>NDEVIDEOS</h3>
-            <p id="videosNotice" class="subtitle">Accessible seulement aux comptes verifiés.</p>
+            <p id="videosNotice" class="subtitle">Accessible seulement aux comptes verifiés. Les videos passent par validation du staff.</p>
           </div>
           <button id="toggleVideos" class="secondary" type="button">Ouvrir NDEVIDEOS</button>
         </div>
+      </section>
+
+      <section id="videoUploadPanel" class="community-access hidden">
+        <div class="community-head">
+          <div>
+            <h3>Poster une video</h3>
+            <p class="subtitle">Ta photo de profil sera prise depuis ton dossier valide, puis le staff devra approuver la video avant publication.</p>
+          </div>
+        </div>
+        <form id="videoUploadForm" class="stack video-upload-form" novalidate>
+          <label for="videoUploadTitle">Titre de la video</label>
+          <input id="videoUploadTitle" type="text" maxlength="80" placeholder="Titre de la publication" required />
+
+          <label for="videoUploadFile">Fichier video</label>
+          <input id="videoUploadFile" type="file" accept="video/*" required />
+
+          <button type="submit">Envoyer au staff</button>
+        </form>
+        <p id="videoUploadNotice" class="setup hidden"></p>
       </section>
 
       <section id="videosBlock" class="community-block hidden">
@@ -143,8 +162,8 @@
       <section class="staff-video-panel">
         <div class="staff-video-head">
           <div>
-            <h3>Publier une video</h3>
-            <p class="subtitle">Format vertical ou paysage, durée maximale 5 minutes.</p>
+            <h3>Publier ou valider une video</h3>
+            <p class="subtitle">Les videos envoyees par les joueurs passent ici en attente avant publication. Durée maximale 5 minutes.</p>
           </div>
         </div>
         <form id="staffVideoForm" class="stack" novalidate>
