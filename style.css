@@ -766,8 +766,46 @@ button:disabled {
 
 .video-card-meta {
   display: grid;
-  gap: 3px;
+  gap: 6px;
   padding: 10px 12px 12px;
+}
+
+.video-card-channel {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.video-card-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ff8a00, #ff4d00);
+  color: #160800;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.video-card-channel div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.video-card-channel strong {
+  font-size: 0.98rem;
+  line-height: 1.2;
+  color: #f5eee7;
+}
+
+.video-card-channel span {
+  color: #d0c2ef;
+  font-size: 0.78rem;
+  line-height: 1.2;
 }
 
 .video-card-meta strong {
@@ -822,6 +860,9 @@ button:disabled {
   right: 12px;
   z-index: 2;
   margin-top: 0;
+  min-height: 42px;
+  min-width: 92px;
+  padding: 10px 14px;
 }
 
 .video-modal-player {
@@ -1009,6 +1050,10 @@ body.videos-theme .videos-stage {
   border: none;
   background: linear-gradient(180deg, rgba(18, 9, 2, 0.98), rgba(4, 4, 4, 0.98));
   display: block;
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
 }
 
 body.videos-theme .videos-shell {
@@ -1055,6 +1100,14 @@ body.videos-theme .video-card--compact {
 body.videos-theme .video-card-meta {
   background: rgba(12, 8, 18, 0.98);
   border-top: 1px solid rgba(255, 165, 66, 0.14);
+}
+
+body.videos-theme .video-card-channel strong {
+  color: #fff4e8;
+}
+
+body.videos-theme .video-card-channel span {
+  color: #d8b88e;
 }
 
 body.videos-theme .video-card-thumb video {
@@ -1656,7 +1709,7 @@ body.videos-theme .video-card-meta span {
   }
 
   .video-modal-player {
-    aspect-ratio: 9 / 16;
+    aspect-ratio: 16 / 9;
   }
 
   .video-modal-meta {
@@ -1664,8 +1717,11 @@ body.videos-theme .video-card-meta span {
   }
 
   .video-modal-close {
-    top: 10px;
-    right: 10px;
+    top: calc(10px + env(safe-area-inset-top));
+    right: calc(10px + env(safe-area-inset-right));
+    min-height: 46px;
+    min-width: 104px;
+    padding: 12px 16px;
   }
 
   .staff-stat,

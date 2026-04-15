@@ -1229,7 +1229,13 @@ function renderVideosFeed(videos = []) {
             <span class="video-card-play">▶</span>
           </div>
           <div class="video-card-meta">
-            <strong>${safeTitle}</strong>
+            <div class="video-card-channel">
+              <span class="video-card-avatar" aria-hidden="true">N</span>
+              <div>
+                <strong>${safeTitle}</strong>
+                <span>NDEVIDEOS · staff anonyme</span>
+              </div>
+            </div>
             <span>${safeDuration} · ${safeTime}</span>
           </div>
         </article>
