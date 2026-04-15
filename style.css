@@ -69,6 +69,22 @@ body::after {
   isolation: isolate;
 }
 
+body.login-mode {
+  overflow: hidden;
+}
+
+body.login-mode .app-shell {
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: grid;
+  align-items: center;
+}
+
+body.login-mode #loginView {
+  width: min(760px, 92vw);
+  justify-self: center;
+}
+
 .app-shell::before {
   content: "";
   position: absolute;
@@ -1267,6 +1283,52 @@ body.videos-theme .video-card-meta span {
   gap: 16px;
 }
 
+.staff-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(8, 5, 15, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  backdrop-filter: blur(10px);
+}
+
+.staff-tab {
+  margin-top: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #e8dff8;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.staff-tab.is-active {
+  background: linear-gradient(135deg, #ff8a00, #ff4d00);
+  color: #160800;
+  box-shadow: 0 12px 24px rgba(255, 120, 0, 0.22);
+}
+
+.staff-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.staff-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
 .staff-controls {
   margin-top: 16px;
   display: flex;
@@ -1627,6 +1689,25 @@ body.videos-theme .video-card-meta span {
 
   .staff-head {
     align-items: stretch;
+    flex-direction: column;
+  }
+
+  .staff-tabs {
+    top: env(safe-area-inset-top);
+    gap: 6px;
+    padding: 6px;
+    border-radius: 14px;
+  }
+
+  .staff-tab {
+    min-height: 42px;
+    padding: 9px 8px;
+    font-size: 0.78rem;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  .staff-panel-head {
     flex-direction: column;
   }
 

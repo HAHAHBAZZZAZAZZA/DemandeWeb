@@ -46,20 +46,22 @@
       <h2>Depot de photo</h2>
       <p class="subtitle">Pseudo: <span id="displayPseudo"></span></p>
 
-      <form id="uploadForm" class="stack" novalidate>
-        <label for="photoInput">Choisir une photo</label>
-        <input id="photoInput" name="photoInput" type="file" accept="image/*" required />
+      <div id="uploadPanel">
+        <form id="uploadForm" class="stack" novalidate>
+          <label for="photoInput">Choisir une photo</label>
+          <input id="photoInput" name="photoInput" type="file" accept="image/*" required />
 
-        <label class="checkbox-row" for="staffConsent">
-          <input id="staffConsent" name="staffConsent" type="checkbox" required />
-          <span>Je valide.</span>
-        </label>
+          <label class="checkbox-row" for="staffConsent">
+            <input id="staffConsent" name="staffConsent" type="checkbox" required />
+            <span>Je valide.</span>
+          </label>
 
-        <button type="submit">Envoyer la photo</button>
-      </form>
-      <p id="uploadLockedNotice" class="setup hidden">
-        Ton compte a deja ete valide. Tu peux consulter les dossiers, mais tu ne peux plus republier de photo.
-      </p>
+          <button type="submit">Envoyer la photo</button>
+        </form>
+        <p id="uploadLockedNotice" class="setup hidden">
+          Ton compte a deja ete valide. Tu peux consulter les dossiers, mais tu ne peux plus republier de photo.
+        </p>
+      </div>
 
       <div id="statusBox" class="status hidden" aria-live="polite"></div>
 
@@ -147,59 +149,78 @@
         <button id="disconnectStaff" class="secondary" type="button">Se deconnecter</button>
       </div>
 
-      <div class="staff-controls">
-        <div class="staff-filter-group">
-          <label for="statusFilter">Filtrer par statut</label>
-          <select id="statusFilter">
-            <option value="">Tous les statuts</option>
-            <option value="en attente">En attente</option>
-            <option value="accepté">Accepté</option>
-            <option value="refusé">Refusé</option>
-          </select>
-        </div>
-        <div class="staff-filter-group">
-          <label for="searchStaff">Rechercher un pseudo</label>
-          <input id="searchStaff" type="search" placeholder="Pseudo ou mot-clé" />
-        </div>
-        <button id="refreshStaff" class="secondary" type="button">Rafraîchir</button>
-      </div>
+      <nav class="staff-tabs" aria-label="Navigation staff">
+        <button class="staff-tab is-active" type="button" data-staff-tab="overview">Vue d'ensemble</button>
+        <button class="staff-tab" type="button" data-staff-tab="dossiers">Dossiers</button>
+        <button class="staff-tab" type="button" data-staff-tab="videos">Vidéos</button>
+      </nav>
 
-      <div id="staffStats" class="staff-stats" aria-live="polite"></div>
-      <div id="staffInsights" class="staff-insights" aria-live="polite"></div>
-
-      <section class="staff-video-panel">
-        <div class="staff-video-head">
-          <div>
-            <span class="section-eyebrow">Outil staff</span>
-            <h3>Publier ou valider une vidéo</h3>
-            <p class="subtitle">Les vidéos envoyées par les joueurs passent ici en attente avant publication. Durée maximale: 5 minutes.</p>
-          </div>
-        </div>
-        <form id="staffVideoForm" class="stack" novalidate>
-          <label for="staffVideoTitle">Titre de la vidéo</label>
-          <input id="staffVideoTitle" type="text" maxlength="80" placeholder="Titre court et utile" required />
-
-          <label for="staffVideoFile">Fichier vidéo</label>
-          <input id="staffVideoFile" type="file" accept="video/*" required />
-
-          <button type="submit">Publier la vidéo</button>
-        </form>
-        <p id="staffVideoNotice" class="setup hidden"></p>
+      <section class="staff-panel" data-staff-panel="overview">
+        <div id="staffStats" class="staff-stats" aria-live="polite"></div>
+        <div id="staffInsights" class="staff-insights" aria-live="polite"></div>
       </section>
 
-      <section class="staff-video-library">
-        <div class="staff-video-head staff-video-head--library">
+      <section class="staff-panel" data-staff-panel="dossiers">
+        <div class="staff-panel-head">
           <div>
-            <span class="section-eyebrow">Gestion</span>
-            <h3>Videos publiées</h3>
-            <p class="subtitle">Supprime ou ajuste rapidement les publications vidéo du staff.</p>
+            <span class="section-eyebrow">Dossiers</span>
+            <h3>Liste des dossiers</h3>
+            <p class="subtitle">Gère les photos, les statuts et les notes sans mélanger les autres outils.</p>
           </div>
-          <button id="refreshStaffVideos" class="secondary" type="button">Rafraîchir</button>
         </div>
-        <div id="staffVideosList" class="staff-videos-list" aria-live="polite"></div>
+        <div class="staff-controls">
+          <div class="staff-filter-group">
+            <label for="statusFilter">Filtrer par statut</label>
+            <select id="statusFilter">
+              <option value="">Tous les statuts</option>
+              <option value="en attente">En attente</option>
+              <option value="accepté">Accepté</option>
+              <option value="refusé">Refusé</option>
+            </select>
+          </div>
+          <div class="staff-filter-group">
+            <label for="searchStaff">Rechercher un pseudo</label>
+            <input id="searchStaff" type="search" placeholder="Pseudo ou mot-clé" />
+          </div>
+          <button id="refreshStaff" class="secondary" type="button">Rafraîchir</button>
+        </div>
+        <div id="staffList" class="staff-list" aria-live="polite"></div>
       </section>
 
-      <div id="staffList" class="staff-list"></div>
+      <section class="staff-panel" data-staff-panel="videos">
+        <section class="staff-video-panel">
+          <div class="staff-video-head">
+            <div>
+              <span class="section-eyebrow">Outil staff</span>
+              <h3>Publier ou valider une vidéo</h3>
+              <p class="subtitle">Les vidéos envoyées par les joueurs passent ici en attente avant publication. Durée maximale: 5 minutes.</p>
+            </div>
+          </div>
+          <form id="staffVideoForm" class="stack" novalidate>
+            <label for="staffVideoTitle">Titre de la vidéo</label>
+            <input id="staffVideoTitle" type="text" maxlength="80" placeholder="Titre court et utile" required />
+
+            <label for="staffVideoFile">Fichier vidéo</label>
+            <input id="staffVideoFile" type="file" accept="video/*" required />
+
+            <button type="submit">Publier la vidéo</button>
+          </form>
+          <p id="staffVideoNotice" class="setup hidden"></p>
+        </section>
+
+        <section class="staff-video-library">
+          <div class="staff-video-head staff-video-head--library">
+            <div>
+              <span class="section-eyebrow">Gestion</span>
+              <h3>Videos publiées</h3>
+              <p class="subtitle">Supprime ou ajuste rapidement les publications vidéo du staff.</p>
+            </div>
+            <button id="refreshStaffVideos" class="secondary" type="button">Rafraîchir</button>
+          </div>
+          <div id="staffVideosList" class="staff-videos-list" aria-live="polite"></div>
+        </section>
+      </section>
+
     </section>
   </main>
 

@@ -29,6 +29,7 @@ const displayPseudo = document.getElementById("displayPseudo");
 const setupNotice = document.getElementById("setupNotice");
 
 const uploadForm = document.getElementById("uploadForm");
+const uploadPanel = document.getElementById("uploadPanel");
 const photoInput = document.getElementById("photoInput");
 const staffConsent = document.getElementById("staffConsent");
 const uploadLockedNotice = document.getElementById("uploadLockedNotice");
@@ -72,6 +73,8 @@ const statusFilter = document.getElementById("statusFilter");
 const searchStaff = document.getElementById("searchStaff");
 const refreshStaff = document.getElementById("refreshStaff");
 const staffStats = document.getElementById("staffStats");
+const staffTabs = document.querySelectorAll("[data-staff-tab]");
+const staffPanels = document.querySelectorAll("[data-staff-panel]");
 
 const STATUS_OPTIONS = ["en attente", "accepté", "refusé"];
 const STATUS_LABELS = {
@@ -102,6 +105,7 @@ let currentTemporaryAccessActive = false;
 let communityIsOpen = false;
 let videosIsOpen = false;
 let staffVideosCache = [];
+let currentStaffPanel = "overview";
 let currentVideoModalUrl = "";
 let communityAccessCountdownId = null;
 let communityAccessExpiryTimeoutId = null;
@@ -280,14 +284,33 @@ function animateView(element) {
   element.classList.add("view-enter");
 }
 
+function setStaffPanel(panelName = "overview") {
+  const normalized = ["overview", "dossiers", "videos"].includes(panelName) ? panelName : "overview";
+  currentStaffPanel = normalized;
+
+  staffTabs.forEach((tab) => {
+    const isActive = tab.getAttribute("data-staff-tab") === normalized;
+    tab.classList.toggle("is-active", isActive);
+    tab.setAttribute("aria-selected", isActive ? "true" : "false");
+    tab.setAttribute("tabindex", isActive ? "0" : "-1");
+  });
+
+  staffPanels.forEach((panel) => {
+    const isVisible = panel.getAttribute("data-staff-panel") === normalized;
+    panel.classList.toggle("hidden", !isVisible);
+  });
+}
+
 function setActiveView(viewName) {
   loginView.classList.add("hidden");
   userView.classList.add("hidden");
   staffView.classList.add("hidden");
+  document.body.classList.remove("login-mode");
 
   if (viewName === "staff") {
     staffView.classList.remove("hidden");
     animateView(staffView);
+    setStaffPanel("overview");
     renderStaffList();
     startPresenceHeartbeat("staff");
     return;
@@ -304,6 +327,7 @@ function setActiveView(viewName) {
     return;
   }
 
+  document.body.classList.add("login-mode");
   loginView.classList.remove("hidden");
   animateView(loginView);
 }
@@ -316,6 +340,10 @@ function setCommunityPanelState({ approved = false, tempActive = false, open = f
 
   if (uploadLockedNotice) {
     uploadLockedNotice.classList.toggle("hidden", !currentSubmissionApproved);
+  }
+
+  if (uploadPanel) {
+    uploadPanel.classList.toggle("hidden", currentSubmissionApproved);
   }
 
   if (photoInput) {
@@ -1954,7 +1982,16 @@ staffList.addEventListener("click", async (event) => {
 });
 
 function handleStaffFiltersChange() {
+  setStaffPanel("dossiers");
   renderStaffEntries(applyStaffFilters(staffCache));
+}
+
+if (staffTabs.length) {
+  staffTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      setStaffPanel(tab.getAttribute("data-staff-tab") || "overview");
+    });
+  });
 }
 
 if (statusFilter) {
@@ -1966,11 +2003,17 @@ if (searchStaff) {
 }
 
 if (refreshStaff) {
-  refreshStaff.addEventListener("click", renderStaffList);
+  refreshStaff.addEventListener("click", () => {
+    setStaffPanel("dossiers");
+    renderStaffList();
+  });
 }
 
 if (refreshStaffVideos) {
-  refreshStaffVideos.addEventListener("click", renderStaffVideosSection);
+  refreshStaffVideos.addEventListener("click", () => {
+    setStaffPanel("videos");
+    renderStaffVideosSection();
+  });
 }
 
 if (staffVideoForm) {
