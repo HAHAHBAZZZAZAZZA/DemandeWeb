@@ -394,15 +394,15 @@ function setVideoPanelState({ approved = false, open = false } = {}) {
 
   if (toggleVideos) {
     toggleVideos.disabled = !approved;
-    toggleVideos.textContent = videosIsOpen ? "Fermer NDEVIDEOS" : "Ouvrir NDEVIDEOS";
+    toggleVideos.textContent = videosIsOpen ? "Fermer le flux" : "Ouvrir le flux";
   }
 
   if (videosNotice) {
     videosNotice.textContent = approved
       ? videosIsOpen
-        ? "Tu peux regarder les videos valides et proposer la tienne."
-        : "Clique pour ouvrir les videos et poster la tienne."
-      : "Acces reserve aux comptes verifiés.";
+        ? "Le flux est ouvert. Tu peux regarder les vidéos validées et proposer la tienne."
+        : "Ouvre le flux vidéo pour parcourir les publications et poster la tienne."
+      : "Accès réservé aux comptes vérifiés.";
   }
 
   if (videoUploadNotice && approved) {
@@ -1404,7 +1404,7 @@ function renderVideosFeed(videos = []) {
   const visibleVideos = getVideoEntriesForPublic(videos);
 
   if (!visibleVideos.length) {
-    videosFeed.innerHTML = '<div class="community-empty">Aucune video validee pour le moment.</div>';
+    videosFeed.innerHTML = '<div class="community-empty">Aucune vidéo validée pour le moment.</div>';
     return;
   }
 
@@ -1419,22 +1419,22 @@ function renderVideosFeed(videos = []) {
       const safePseudo = escapeHtml(video.pseudo || "Joueur");
       const avatarMarkup = buildVideoAvatarMarkup(video);
       return `
-        <article class="video-card video-card--compact" data-video-id="${videoId}" data-video-path="${safePath}" data-video-title="${safeTitle}" data-video-duration="${escapeHtml(
+        <article class="video-card video-card--youtube" data-video-id="${videoId}" data-video-path="${safePath}" data-video-title="${safeTitle}" data-video-duration="${escapeHtml(
           String(video.duration_seconds || 0)
         )}" data-video-created="${escapeHtml(String(video.created_at || ""))}" style="--delay:${index * 60}ms">
           <div class="video-card-thumb">
             <video src="${safeUrl}" muted autoplay loop playsinline preload="metadata"></video>
-            <span class="video-card-play">▶</span>
+            <span class="video-card-duration">${safeDuration}</span>
           </div>
           <div class="video-card-meta">
             <div class="video-card-channel">
               ${avatarMarkup}
               <div>
                 <strong>${safeTitle}</strong>
-                <span>${safePseudo} · video validée</span>
+                <span>${safePseudo}</span>
+                <span class="video-card-subline">Vidéo validée · ${safeTime}</span>
               </div>
             </div>
-            <span>${safeDuration} · ${safeTime}</span>
           </div>
         </article>
       `;
@@ -1448,7 +1448,7 @@ function renderStaffVideosList(videos = []) {
   }
 
   if (!videos.length) {
-    staffVideosList.innerHTML = '<div class="community-empty">Aucune video publiee pour le moment.</div>';
+    staffVideosList.innerHTML = '<div class="community-empty">Aucune vidéo publiée pour le moment.</div>';
     return;
   }
 
@@ -1470,7 +1470,10 @@ function renderStaffVideosList(videos = []) {
       const avatarMarkup = buildVideoAvatarMarkup(video);
       return `
         <article class="staff-video-item" style="--delay:${index * 60}ms">
-          <video src="${safeUrl}" controls playsinline preload="metadata"></video>
+          <div class="staff-video-preview">
+            <video src="${safeUrl}" controls playsinline preload="metadata"></video>
+            <span class="staff-video-ribbon">Espace staff</span>
+          </div>
           <div class="staff-video-item-meta">
             <div class="staff-video-item-channel">
               ${avatarMarkup}
@@ -1478,17 +1481,19 @@ function renderStaffVideosList(videos = []) {
                 <strong>${safeTitle}</strong>
                 <span>${safePseudo} · ${safeDuration} · ${safeTime}</span>
               </div>
+              <span class="status-chip status-chip--${statusClass}">${statusLabel}</span>
             </div>
             <label class="entry-status">
-              <span>Statut</span>
+              <span>Statut de publication</span>
               <select data-video-id="${safeId}">
                 ${optionNodes}
               </select>
             </label>
-            <span class="status-chip status-chip--${statusClass}">${statusLabel}</span>
-            <button class="secondary staff-video-delete" type="button" data-id="${safeId}" data-path="${escapeHtml(video.video_path || "")}">
-              Supprimer
-            </button>
+            <div class="staff-video-actions">
+              <button class="secondary staff-video-delete" type="button" data-id="${safeId}" data-path="${escapeHtml(video.video_path || "")}">
+                Supprimer
+              </button>
+            </div>
           </div>
         </article>
       `;
@@ -1504,13 +1509,13 @@ async function renderVideosSection() {
     return;
   }
 
-  videosFeed.innerHTML = '<div class="community-empty">Chargement des videos...</div>';
+  videosFeed.innerHTML = '<div class="community-empty">Chargement des vidéos...</div>';
 
   try {
     const videos = await fetchStaffVideos();
     renderVideosFeed(videos);
   } catch (error) {
-    videosFeed.innerHTML = `<div class="community-empty">${escapeHtml(error.message || "Erreur de chargement des videos")}</div>`;
+    videosFeed.innerHTML = `<div class="community-empty">${escapeHtml(error.message || "Erreur de chargement des vidéos")}</div>`;
   }
 }
 
@@ -1519,14 +1524,14 @@ async function renderStaffVideosSection() {
     return;
   }
 
-  staffVideosList.innerHTML = '<div class="community-empty">Chargement des videos...</div>';
+  staffVideosList.innerHTML = '<div class="community-empty">Chargement des vidéos...</div>';
 
   try {
     const videos = await fetchStaffVideos();
     staffVideosCache = Array.isArray(videos) ? videos : [];
     renderStaffVideosList(staffVideosCache);
   } catch (error) {
-    staffVideosList.innerHTML = `<div class="community-empty">${escapeHtml(error.message || "Erreur de chargement des videos")}</div>`;
+    staffVideosList.innerHTML = `<div class="community-empty">${escapeHtml(error.message || "Erreur de chargement des vidéos")}</div>`;
   }
 }
 

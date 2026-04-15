@@ -85,41 +85,49 @@
         <div id="communityGallery" class="community-grid" aria-live="polite"></div>
       </section>
 
-      <section id="videosAccess" class="community-access hidden">
-        <div class="community-head">
+      <section id="videosAccess" class="community-access community-access--video hidden">
+        <div class="community-head video-intro">
           <div>
-            <h3>NDEVIDEOS</h3>
-            <p id="videosNotice" class="subtitle">Accessible seulement aux comptes verifiés. Les videos passent par validation du staff.</p>
+            <span class="section-eyebrow">Flux vidéo privé</span>
+            <h3>Une interface pensée d'abord pour le mobile</h3>
+            <p id="videosNotice" class="subtitle">Accessible seulement aux comptes vérifiés. Les vidéos passent par validation du staff avant publication.</p>
           </div>
-          <button id="toggleVideos" class="secondary" type="button">Ouvrir NDEVIDEOS</button>
+          <button id="toggleVideos" class="secondary" type="button">Ouvrir le flux</button>
+        </div>
+        <div class="video-pill-row" aria-hidden="true">
+          <span class="video-pill">Lecture rapide</span>
+          <span class="video-pill">Validation staff</span>
+          <span class="video-pill">Optimisé pouce</span>
         </div>
       </section>
 
-      <section id="videoUploadPanel" class="community-access hidden">
+      <section id="videoUploadPanel" class="community-access community-access--upload hidden">
         <div class="community-head">
           <div>
-            <h3>Poster une video</h3>
-            <p class="subtitle">Ta photo de profil sera prise depuis ton dossier valide, puis le staff devra approuver la video avant publication.</p>
+            <span class="section-eyebrow">Publication membre</span>
+            <h3>Poster une vidéo</h3>
+            <p class="subtitle">Ta photo de profil est reprise automatiquement depuis ton dossier validé. Le staff approuve ensuite la vidéo avant publication.</p>
           </div>
         </div>
         <form id="videoUploadForm" class="stack video-upload-form" novalidate>
-          <label for="videoUploadTitle">Titre de la video</label>
-          <input id="videoUploadTitle" type="text" maxlength="80" placeholder="Titre de la publication" required />
+          <label for="videoUploadTitle">Titre de la vidéo</label>
+          <input id="videoUploadTitle" type="text" maxlength="80" placeholder="Donne un titre clair et court" required />
 
-          <label for="videoUploadFile">Fichier video</label>
+          <label for="videoUploadFile">Fichier vidéo</label>
           <input id="videoUploadFile" type="file" accept="video/*" required />
 
-          <button type="submit">Envoyer au staff</button>
+          <button type="submit">Envoyer pour validation</button>
         </form>
         <p id="videoUploadNotice" class="setup hidden"></p>
       </section>
 
-      <section id="videosBlock" class="community-block hidden">
+      <section id="videosBlock" class="community-block videos-stage hidden">
         <div class="videos-shell">
           <div class="videos-head">
             <div>
+              <span class="section-eyebrow">Bibliothèque vidéo</span>
               <h3>Videos du staff</h3>
-              <p class="subtitle">Lis les publications vidéo sans voir le nom du staff.</p>
+              <p class="subtitle">Un flux vertical plus clair, plus rapide et plus agréable à parcourir sur téléphone.</p>
             </div>
             <button id="refreshVideos" class="secondary" type="button">Rafraîchir</button>
           </div>
@@ -162,18 +170,19 @@
       <section class="staff-video-panel">
         <div class="staff-video-head">
           <div>
-            <h3>Publier ou valider une video</h3>
-            <p class="subtitle">Les videos envoyees par les joueurs passent ici en attente avant publication. Durée maximale 5 minutes.</p>
+            <span class="section-eyebrow">Outil staff</span>
+            <h3>Publier ou valider une vidéo</h3>
+            <p class="subtitle">Les vidéos envoyées par les joueurs passent ici en attente avant publication. Durée maximale: 5 minutes.</p>
           </div>
         </div>
         <form id="staffVideoForm" class="stack" novalidate>
-          <label for="staffVideoTitle">Titre de la video</label>
-          <input id="staffVideoTitle" type="text" maxlength="80" placeholder="Titre de la publication" required />
+          <label for="staffVideoTitle">Titre de la vidéo</label>
+          <input id="staffVideoTitle" type="text" maxlength="80" placeholder="Titre court et utile" required />
 
-          <label for="staffVideoFile">Fichier video</label>
+          <label for="staffVideoFile">Fichier vidéo</label>
           <input id="staffVideoFile" type="file" accept="video/*" required />
 
-          <button type="submit">Publier la video</button>
+          <button type="submit">Publier la vidéo</button>
         </form>
         <p id="staffVideoNotice" class="setup hidden"></p>
       </section>
@@ -181,8 +190,9 @@
       <section class="staff-video-library">
         <div class="staff-video-head staff-video-head--library">
           <div>
-            <h3>Videos publiees</h3>
-            <p class="subtitle">Supprime rapidement les publications videos du staff.</p>
+            <span class="section-eyebrow">Gestion</span>
+            <h3>Videos publiées</h3>
+            <p class="subtitle">Supprime ou ajuste rapidement les publications vidéo du staff.</p>
           </div>
           <button id="refreshStaffVideos" class="secondary" type="button">Rafraîchir</button>
         </div>
