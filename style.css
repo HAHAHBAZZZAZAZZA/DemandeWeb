@@ -708,7 +708,7 @@ button:disabled {
 
 .video-feed {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 14px;
 }
 
@@ -766,17 +766,19 @@ button:disabled {
 
 .video-card-meta {
   display: grid;
-  gap: 4px;
+  gap: 3px;
   padding: 10px 12px 12px;
 }
 
 .video-card-meta strong {
-  font-size: 1rem;
+  font-size: 0.98rem;
+  line-height: 1.2;
 }
 
 .video-card-meta span {
   color: #d0c2ef;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  line-height: 1.25;
 }
 
 .video-modal {
@@ -1047,6 +1049,7 @@ body.videos-theme .video-card--compact {
   border-color: rgba(255, 165, 66, 0.2);
   background: linear-gradient(180deg, rgba(28, 13, 2, 0.98), rgba(8, 8, 8, 0.98));
   min-height: 0;
+  cursor: pointer;
 }
 
 body.videos-theme .video-card-meta {
@@ -1056,6 +1059,18 @@ body.videos-theme .video-card-meta {
 
 body.videos-theme .video-card-thumb video {
   object-fit: cover;
+}
+
+body.videos-theme .video-card-thumb {
+  aspect-ratio: 16 / 9;
+}
+
+body.videos-theme .video-card-meta strong {
+  color: #fff4e8;
+}
+
+body.videos-theme .video-card-meta span {
+  color: #d8b88e;
 }
 
 .staff-head {
@@ -1503,7 +1518,7 @@ body.videos-theme .video-card-thumb video {
   }
 
   body.videos-theme .video-feed {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: 1fr;
     gap: 12px;
     padding-right: 0;
     overscroll-behavior-y: contain;
@@ -1607,6 +1622,7 @@ body.videos-theme .video-card-thumb video {
 
   body.videos-theme .video-feed {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   body.videos-theme .videos-head h3 {
@@ -1622,7 +1638,7 @@ body.videos-theme .video-card-thumb video {
   }
 
   body.videos-theme .video-card-thumb {
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
   }
 
   body.videos-theme .video-card-meta strong {
@@ -1631,6 +1647,25 @@ body.videos-theme .video-card-thumb video {
 
   body.videos-theme .video-card-meta span {
     font-size: 0.76rem;
+  }
+
+  .video-modal-dialog {
+    width: 96vw;
+    max-height: 96dvh;
+    border-radius: 14px;
+  }
+
+  .video-modal-player {
+    aspect-ratio: 9 / 16;
+  }
+
+  .video-modal-meta {
+    padding: 12px 14px 14px;
+  }
+
+  .video-modal-close {
+    top: 10px;
+    right: 10px;
   }
 
   .staff-stat,
