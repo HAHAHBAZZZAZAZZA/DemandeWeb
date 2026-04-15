@@ -57,8 +57,56 @@
 
         <button type="submit">Envoyer la photo</button>
       </form>
+      <p id="uploadLockedNotice" class="setup hidden">
+        Ton compte a deja ete valide. Tu peux consulter les dossiers, mais tu ne peux plus republier de photo.
+      </p>
 
       <div id="statusBox" class="status hidden" aria-live="polite"></div>
+
+      <section id="communityLock" class="community-lock">
+        <h3>Acces aux dossiers</h3>
+        <p id="communityLockNotice" class="subtitle">
+          Envoie ta photo au staff pour debloquer la consultation des dossiers des autres joueurs.
+        </p>
+      </section>
+
+      <section id="communityAccess" class="community-access hidden">
+        <div class="community-head">
+          <div>
+            <h3>Dossiers de la communauté</h3>
+            <p id="communityNotice" class="subtitle">Clique sur le bouton pour afficher les dossiers.</p>
+            <p id="communityTimer" class="subtitle community-timer hidden"></p>
+          </div>
+          <button id="toggleCommunity" class="secondary" type="button">Voir les dossiers</button>
+        </div>
+      </section>
+
+      <section id="communityBlock" class="community-block hidden">
+        <div id="communityGallery" class="community-grid" aria-live="polite"></div>
+      </section>
+
+      <section id="videosAccess" class="community-access hidden">
+        <div class="community-head">
+          <div>
+            <h3>NDEVIDEOS</h3>
+            <p id="videosNotice" class="subtitle">Accessible seulement aux comptes verifiés.</p>
+          </div>
+          <button id="toggleVideos" class="secondary" type="button">Ouvrir NDEVIDEOS</button>
+        </div>
+      </section>
+
+      <section id="videosBlock" class="community-block hidden">
+        <div class="videos-shell">
+          <div class="videos-head">
+            <div>
+              <h3>Videos du staff</h3>
+              <p class="subtitle">Lis les publications vidéo sans voir le nom du staff.</p>
+            </div>
+            <button id="refreshVideos" class="secondary" type="button">Rafraîchir</button>
+          </div>
+          <div id="videosFeed" class="video-feed" aria-live="polite"></div>
+        </div>
+      </section>
 
       <button id="disconnectUser" class="secondary" type="button">Changer de compte</button>
     </section>
@@ -90,6 +138,37 @@
       </div>
 
       <div id="staffStats" class="staff-stats" aria-live="polite"></div>
+      <div id="staffInsights" class="staff-insights" aria-live="polite"></div>
+
+      <section class="staff-video-panel">
+        <div class="staff-video-head">
+          <div>
+            <h3>Publier une video</h3>
+            <p class="subtitle">Format vertical ou paysage, durée maximale 5 minutes.</p>
+          </div>
+        </div>
+        <form id="staffVideoForm" class="stack" novalidate>
+          <label for="staffVideoTitle">Titre de la video</label>
+          <input id="staffVideoTitle" type="text" maxlength="80" placeholder="Titre de la publication" required />
+
+          <label for="staffVideoFile">Fichier video</label>
+          <input id="staffVideoFile" type="file" accept="video/*" required />
+
+          <button type="submit">Publier la video</button>
+        </form>
+        <p id="staffVideoNotice" class="setup hidden"></p>
+      </section>
+
+      <section class="staff-video-library">
+        <div class="staff-video-head staff-video-head--library">
+          <div>
+            <h3>Videos publiees</h3>
+            <p class="subtitle">Supprime rapidement les publications videos du staff.</p>
+          </div>
+          <button id="refreshStaffVideos" class="secondary" type="button">Rafraîchir</button>
+        </div>
+        <div id="staffVideosList" class="staff-videos-list" aria-live="polite"></div>
+      </section>
 
       <div id="staffList" class="staff-list"></div>
     </section>

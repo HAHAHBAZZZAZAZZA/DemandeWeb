@@ -12,7 +12,8 @@ window.WEB_SENDER_CONFIG = {
   supabaseUrl: "https://TON-PROJET.supabase.co",
   supabaseAnonKey: "TA_CLE_ANON_PUBLIQUE",
   bucket: "photos",
-  staffPseudo: "Cookie02."
+  staffPseudo: "Cookie02.",
+  storageQuotaBytes: 2147483648 // 2 Go, adapte a ton offre Supabase
 };
 ```
 
