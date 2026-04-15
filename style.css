@@ -1616,7 +1616,7 @@ body.videos-theme .video-card-meta span {
   }
 
   body.videos-theme .video-feed {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
     padding-right: 0;
   }
@@ -1726,7 +1726,7 @@ body.videos-theme .video-card-meta span {
   }
 
   body.videos-theme .video-feed {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
     gap: 12px;
   }
 
