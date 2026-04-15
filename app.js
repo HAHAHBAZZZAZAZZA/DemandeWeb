@@ -47,6 +47,10 @@ const toggleVideos = document.getElementById("toggleVideos");
 const videosBlock = document.getElementById("videosBlock");
 const videosFeed = document.getElementById("videosFeed");
 const refreshVideos = document.getElementById("refreshVideos");
+const videoModal = document.getElementById("videoModal");
+const videoModalPlayer = document.getElementById("videoModalPlayer");
+const videoModalTitle = document.getElementById("videoModalTitle");
+const videoModalInfo = document.getElementById("videoModalInfo");
 
 const staffList = document.getElementById("staffList");
 const disconnectUser = document.getElementById("disconnectUser");
@@ -86,6 +90,7 @@ let currentTemporaryAccessActive = false;
 let communityIsOpen = false;
 let videosIsOpen = false;
 let staffVideosCache = [];
+let currentVideoModalUrl = "";
 let communityAccessCountdownId = null;
 let communityAccessExpiryTimeoutId = null;
 let presenceHeartbeatId = null;
@@ -408,6 +413,7 @@ function disconnect() {
   clearCommunityTimers();
   clearPresenceHeartbeat();
   document.body.classList.remove("videos-theme");
+  closeVideoModal();
   setCommunityPanelState({ approved: false, tempActive: false, open: false });
   setVideoPanelState({ approved: false, open: false });
   setActiveView("login");
@@ -1026,6 +1032,50 @@ function buildProtectedVideoUrl(path) {
   return data?.publicUrl || "";
 }
 
+function openVideoModal(video) {
+  if (!videoModal || !videoModalPlayer) {
+    return;
+  }
+
+  const videoUrl = buildProtectedVideoUrl(video?.video_path || "");
+  if (!videoUrl) {
+    return;
+  }
+
+  currentVideoModalUrl = videoUrl;
+  videoModalPlayer.src = videoUrl;
+  videoModalPlayer.load();
+  if (videoModalTitle) {
+    videoModalTitle.textContent = video?.title || "Video du staff";
+  }
+  if (videoModalInfo) {
+    const duration = formatVideoDuration(video?.duration_seconds);
+    const published = formatDate(video?.created_at);
+    videoModalInfo.textContent = `${duration} · ${published}`;
+  }
+
+  videoModal.classList.remove("hidden");
+  videoModal.classList.add("visible");
+  videoModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("video-modal-open");
+  videoModalPlayer.play().catch(() => {});
+}
+
+function closeVideoModal() {
+  if (!videoModal || !videoModalPlayer) {
+    return;
+  }
+
+  videoModalPlayer.pause();
+  videoModalPlayer.removeAttribute("src");
+  videoModalPlayer.load();
+  currentVideoModalUrl = "";
+  videoModal.classList.add("hidden");
+  videoModal.classList.remove("visible");
+  videoModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("video-modal-open");
+}
+
 async function getMediaDurationSeconds(file) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -1164,17 +1214,23 @@ function renderVideosFeed(videos = []) {
 
   videosFeed.innerHTML = videos
     .map((video, index) => {
+      const videoId = escapeHtml(video.id || "");
       const safeTitle = escapeHtml(video.title || "Video du staff");
       const safeDuration = escapeHtml(formatVideoDuration(video.duration_seconds));
       const safeTime = escapeHtml(formatDate(video.created_at));
+      const safePath = escapeHtml(video.video_path || "");
       const safeUrl = escapeHtml(buildProtectedVideoUrl(video.video_path || ""));
       return `
-        <article class="video-card video-card--fullscreen" style="--delay:${index * 60}ms">
-          <video src="${safeUrl}" controls playsinline preload="metadata"></video>
+        <article class="video-card video-card--compact" data-video-id="${videoId}" data-video-path="${safePath}" data-video-title="${safeTitle}" data-video-duration="${escapeHtml(
+          String(video.duration_seconds || 0)
+        )}" data-video-created="${escapeHtml(String(video.created_at || ""))}" style="--delay:${index * 60}ms">
+          <div class="video-card-thumb">
+            <video src="${safeUrl}" muted autoplay loop playsinline preload="metadata"></video>
+            <span class="video-card-play">▶</span>
+          </div>
           <div class="video-card-meta">
             <strong>${safeTitle}</strong>
-            <span>${safeDuration}</span>
-            <span>${safeTime}</span>
+            <span>${safeDuration} · ${safeTime}</span>
           </div>
         </article>
       `;
@@ -1679,6 +1735,49 @@ if (toggleVideos) {
 if (refreshVideos) {
   refreshVideos.addEventListener("click", renderVideosSection);
 }
+
+if (videosFeed) {
+  videosFeed.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    const card = target.closest(".video-card");
+    if (!(card instanceof HTMLElement)) {
+      return;
+    }
+
+    const video = {
+      id: card.getAttribute("data-video-id") || "",
+      video_path: card.getAttribute("data-video-path") || "",
+      title: card.getAttribute("data-video-title") || "Video du staff",
+      duration_seconds: Number(card.getAttribute("data-video-duration") || 0),
+      created_at: card.getAttribute("data-video-created") || ""
+    };
+
+    openVideoModal(video);
+  });
+}
+
+if (videoModal) {
+  videoModal.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
+      return;
+    }
+
+    if (target.closest("[data-close-video-modal]")) {
+      closeVideoModal();
+    }
+  });
+}
+
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !videoModal?.classList.contains("hidden")) {
+    closeVideoModal();
+  }
+});
 
 if (staffVideosList) {
   staffVideosList.addEventListener("click", async (event) => {
